@@ -13,18 +13,29 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 2. HIGH-CONTRAST, READABLE CSS
+# 2. BULLETPROOF CSS OVERRIDE (FORCES LIGHT MODE & HIGH CONTRAST)
 st.markdown("""
     <style>
-    .stApp {
-        background-color: #F8FAFC;
-    }
-    /* Make all standard text and headings dark and readable */
-    h1, h2, h3, h4, h5, h6, p, span, div {
-        color: #0F172A; 
+    /* Force main background to light gray */
+    .stApp, .main {
+        background-color: #F8FAFC !important;
     }
     
-    /* Header Banner */
+    /* Force Sidebar background to solid white and text to black */
+    [data-testid="stSidebar"] {
+        background-color: #FFFFFF !important;
+        border-right: 1px solid #E2E8F0 !important;
+    }
+    [data-testid="stSidebarNav"], [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label, [data-testid="stSidebar"] div {
+        color: #0F172A !important; 
+    }
+
+    /* Force all general text, headers, and labels to dark navy/black */
+    h1, h2, h3, h4, h5, h6, p, label, .stMarkdown {
+        color: #0F172A !important;
+    }
+    
+    /* Header Banner styling */
     .main-header {
         background-color: #1E3A8A;
         padding: 25px 35px;
@@ -46,8 +57,8 @@ st.markdown("""
     
     /* KPI Cards */
     .kpi-card {
-        background: #FFFFFF;
-        border: 1px solid #CBD5E1;
+        background: #FFFFFF !important;
+        border: 1px solid #CBD5E1 !important;
         border-radius: 10px;
         padding: 20px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
@@ -75,6 +86,19 @@ st.markdown("""
         margin-bottom: 10px;
         border-bottom: 2px solid #E2E8F0;
         padding-bottom: 5px;
+    }
+
+    /* Force Download Button to stand out (Bright Blue with White Text) */
+    .stDownloadButton button {
+        background-color: #0284C7 !important;
+        border: none !important;
+        border-radius: 6px !important;
+        padding: 10px 20px !important;
+    }
+    .stDownloadButton button p, .stDownloadButton button span {
+        color: #FFFFFF !important;
+        font-weight: 700 !important;
+        font-size: 16px !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -192,7 +216,7 @@ if uploaded_file is not None:
 
             st.write("<br>", unsafe_allow_html=True)
 
-            # 6. VISIBLE LAYOUT (NO TABS)
+            # 6. VISIBLE LAYOUT
             
             # --- SECTION 1: EXECUTIVES ---
             st.markdown('<div class="section-title">1. Executive Budgets & Shipments</div>', unsafe_allow_html=True)
@@ -209,7 +233,7 @@ if uploaded_file is not None:
                 
                 fig_exec = px.bar(t3_budget, x='Sales Executive', y=['Budget_Allocated', 'Budget_Utilized'], barmode='group',
                                   color_discrete_map={'Budget_Allocated': '#0F172A', 'Budget_Utilized': '#0284C7'})
-                fig_exec.update_layout(title="Budget Comparison", margin=dict(t=30, b=0))
+                fig_exec.update_layout(title="Budget Comparison", margin=dict(t=30, b=0), plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
                 st.plotly_chart(fig_exec, use_container_width=True)
 
             # --- SECTION 2: REGIONS ---
@@ -219,7 +243,7 @@ if uploaded_file is not None:
                 st.dataframe(t4_region.style.format({'Budget_Utilized': 'PKR {:,.0f}'}), use_container_width=True, hide_index=True)
             with col_d:
                 fig_reg = px.bar(t4_region, x='Budget_Utilized', y='Country', orientation='h', color_discrete_sequence=['#1E3A8A'])
-                fig_reg.update_layout(yaxis={'categoryorder':'total ascending'}, margin=dict(t=0, b=0))
+                fig_reg.update_layout(yaxis={'categoryorder':'total ascending'}, margin=dict(t=0, b=0), plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
                 st.plotly_chart(fig_reg, use_container_width=True)
 
             # --- SECTION 3: CUSTOMERS ---
@@ -229,7 +253,7 @@ if uploaded_file is not None:
                 st.dataframe(t5_customer.style.format({'Budget_Utilized': 'PKR {:,.0f}'}), use_container_width=True, hide_index=True)
             with col_f:
                 fig_cust = px.bar(t5_customer, x='Budget_Utilized', y='Customer', orientation='h', color_discrete_sequence=['#0284C7'])
-                fig_cust.update_layout(yaxis={'categoryorder':'total ascending'}, margin=dict(t=0, b=0))
+                fig_cust.update_layout(yaxis={'categoryorder':'total ascending'}, margin=dict(t=0, b=0), plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
                 st.plotly_chart(fig_cust, use_container_width=True)
 
             # 7. SINGLE-PAGE EXCEL GENERATION
@@ -250,19 +274,17 @@ if uploaded_file is not None:
             total_curr = workbook.add_format({'bold': True, 'border': 1, 'num_format': 'PKR #,##0', 'bg_color': '#F2F2F2', 'align': 'right'})
             total_num = workbook.add_format({'bold': True, 'border': 1, 'num_format': '#,##0', 'bg_color': '#F2F2F2', 'align': 'right'})
 
-            # Set grid widths
-            ws.set_column('A:A', 35) # Names/Countries/Customers
-            ws.set_column('B:B', 18) # Spend
-            ws.set_column('C:C', 15) # Shipments/Totals
-            ws.set_column('D:D', 3)  # Spacer
-            ws.set_column('E:E', 25) # Exec Budget Name
-            ws.set_column('F:H', 18) # Budget Values
+            ws.set_column('A:A', 35) 
+            ws.set_column('B:B', 18) 
+            ws.set_column('C:C', 15) 
+            ws.set_column('D:D', 3)  
+            ws.set_column('E:E', 25) 
+            ws.set_column('F:H', 18) 
 
-            # Title
             month_label = ", ".join(selected_months)
             ws.write(0, 0, f"Executive Courier Dashboard - {month_label}", title_fmt)
 
-            # TABLE 1 (Col A-C, Row 3)
+            # TABLE 1
             ws.write(2, 0, "Table 1: Expense Summary", sec_hdr_fmt)
             ws.write(3, 0, "Executive", th_fmt); ws.write(3, 1, "Spend (PKR)", th_fmt); ws.write(3, 2, "Grand Total", th_fmt)
             r = 4
@@ -271,7 +293,7 @@ if uploaded_file is not None:
                 r += 1
             ws.write(r, 0, "Grand Total", total_txt); ws.write_formula(r, 1, f"=SUM(B5:B{r})", total_curr); ws.write_formula(r, 2, f"=SUM(C5:C{r})", total_curr)
 
-            # TABLE 2 (Col A-B, Row under T1)
+            # TABLE 2 
             r2_start = r + 2
             ws.write(r2_start, 0, "Table 2: Shipments", sec_hdr_fmt)
             ws.write(r2_start + 1, 0, "Executive", th_fmt); ws.write(r2_start + 1, 1, "Couriers", th_fmt)
@@ -281,7 +303,7 @@ if uploaded_file is not None:
                 r2 += 1
             ws.write(r2, 0, "Grand Total", total_txt); ws.write_formula(r2, 1, f"=SUM(B{r2_start + 3}:B{r2})", total_num)
 
-            # TABLE 3 (Col E-H, Row 3)
+            # TABLE 3 
             ws.write(2, 4, "Table 3: Budget Summary", sec_hdr_fmt)
             ws.write(3, 4, "Executive", th_fmt); ws.write(3, 5, "Allocated", th_fmt); ws.write(3, 6, "Utilized", th_fmt); ws.write(3, 7, "Variance", th_fmt)
             r3 = 4
@@ -292,7 +314,7 @@ if uploaded_file is not None:
             ws.write(r3, 4, "Grand Total", total_txt); ws.write_formula(r3, 5, f"=SUM(F5:F{r3})", total_curr)
             ws.write_formula(r3, 6, f"=SUM(G5:G{r3})", total_curr); ws.write_formula(r3, 7, f"=SUM(H5:H{r3})", total_curr)
 
-            # CHART 1 (Col E, Row under T3)
+            # CHART 1 
             chart1 = workbook.add_chart({'type': 'column'})
             chart1.add_series({'name': 'Allocated', 'categories': f'=Dashboard!$E$5:$E${r3}', 'values': f'=Dashboard!$F$5:$F${r3}', 'fill': {'color': '#1F497D'}})
             chart1.add_series({'name': 'Utilized', 'categories': f'=Dashboard!$E$5:$E${r3}', 'values': f'=Dashboard!$G$5:$G${r3}', 'fill': {'color': '#00A0DC'}})
@@ -300,7 +322,7 @@ if uploaded_file is not None:
             chart1.set_size({'width': 580, 'height': 280})
             ws.insert_chart(r3 + 2, 4, chart1)
 
-            # TABLE 4 (Col A-C, Row 22)
+            # TABLE 4 
             r4_start = max(r2 + 2, 22)
             ws.write(r4_start, 0, "Table 4: Top 10 Regions", sec_hdr_fmt)
             ws.write(r4_start + 1, 0, "Country", th_fmt); ws.write(r4_start + 1, 1, "Spend (PKR)", th_fmt); ws.write(r4_start + 1, 2, "Shipments", th_fmt)
@@ -310,14 +332,14 @@ if uploaded_file is not None:
                 r4 += 1
             ws.write(r4, 0, "Grand Total", total_txt); ws.write_formula(r4, 1, f"=SUM(B{r4_start+3}:B{r4})", total_curr); ws.write_formula(r4, 2, f"=SUM(C{r4_start+3}:C{r4})", total_num)
 
-            # CHART 2 (Col E, Row matching T4)
+            # CHART 2 
             chart2 = workbook.add_chart({'type': 'bar'})
             chart2.add_series({'name': 'Spend', 'categories': f'=Dashboard!$A${r4_start+3}:$A${r4}', 'values': f'=Dashboard!$B${r4_start+3}:$B${r4}', 'fill': {'color': '#1F497D'}})
             chart2.set_title({'name': 'Spend by Region'})
             chart2.set_size({'width': 580, 'height': 280})
             ws.insert_chart(r4_start, 4, chart2)
 
-            # TABLE 5 (Col A-C, Row under T4)
+            # TABLE 5 
             r5_start = r4 + 2
             ws.write(r5_start, 0, "Table 5: Top 15 Customers", sec_hdr_fmt)
             ws.write(r5_start + 1, 0, "Customer", th_fmt); ws.write(r5_start + 1, 1, "Spend (PKR)", th_fmt); ws.write(r5_start + 1, 2, "Shipments", th_fmt)
@@ -327,7 +349,7 @@ if uploaded_file is not None:
                 r5 += 1
             ws.write(r5, 0, "Grand Total", total_txt); ws.write_formula(r5, 1, f"=SUM(B{r5_start+3}:B{r5})", total_curr); ws.write_formula(r5, 2, f"=SUM(C{r5_start+3}:C{r5})", total_num)
 
-            # CHART 3 (Col E, Row matching T5)
+            # CHART 3 
             chart3 = workbook.add_chart({'type': 'bar'})
             chart3.add_series({'name': 'Spend', 'categories': f'=Dashboard!$A${r5_start+3}:$A${r5}', 'values': f'=Dashboard!$B${r5_start+3}:$B${r5}', 'fill': {'color': '#00A0DC'}})
             chart3.set_title({'name': 'Spend by Customer'})
@@ -336,9 +358,8 @@ if uploaded_file is not None:
 
             workbook.close()
 
-            # Export Button
             st.markdown("---")
-            st.markdown("### 📥 Download Report")
+            st.markdown("### 📥 Download Export")
             st.download_button(
                 label="Download 1-Page Excel Dashboard (.xlsx)",
                 data=excel_buffer.getvalue(),
